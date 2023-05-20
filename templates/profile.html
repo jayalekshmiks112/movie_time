@@ -13,7 +13,7 @@
     <meta name="description" content="This project demonstrates how CSS grid (with flexbox and float fallback) can be used to re-create the layout of an Instagram profile page.">
 
     <!-- Title -->
-    <title>Instagram Profile Layout</title>
+    <title>Let's Chat Profile Layout</title>
 
     <!-- External CSS Files -->
     <link rel="stylesheet" href="{% static 'assets3/css/reset.css' %}">
@@ -86,9 +86,10 @@
                     <br><br>
                     <div class="profile-user-settings">
                         <a  href="{% url 'profile' profile.user %}"  class="btns profiele-edit-btn">Posts</a>
-                        {% if request.user == profile.user %}
-                        <a  href="{% url 'profilefavourite' profile.user %}"  class="btns profeile-edit-btn">Saved</a>
-                        {% endif %}
+                        <a  href="{% url 'saved-folders' user=profile.user.id %}"  class="btns profeile-edit-btn">Saved</a>
+                        <!--{% if request.user == profile.user %}-->
+                        
+                        <!--{% endif %}-->
                     </div>
                 </div>
 
@@ -121,7 +122,7 @@
                 {% for post in posts %}
                 <a href="{{post.get_absolute_url}}"><div class="gallery-item" tabindex="0">
 
-                    <img src="{{ post.picture.url }}" class="gallery-image" alt="" style="width: 500px; height: 300px; object-fit: cover;">
+                    <img src="https://image.tmdb.org/t/p/original/{{ post.picture }}" class="gallery-image" alt="" style="width: 500px; height: 300px; object-fit: cover;">
 
                     <div class="gallery-item-info">
 

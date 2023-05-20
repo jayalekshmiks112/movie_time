@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Saved Folders</h2>
+  {% for folder in folders %}
+    <h3>{{ folder }}</h3>
+    {% for post in folder.posts.all %}
+      <div>
+        {% if post.picture %}
+          <img src="https://image.tmdb.org/t/p/original/{{ post.picture }}" alt="Post Image">
+        {% endif %}
+      </div>
+    {% empty %}
+      <p>No posts in this folder</p>
+    {% endfor %}
+  {% empty %}
+    <p>No folders created yet</p>
+  {% endfor %}
+{% endblock %}

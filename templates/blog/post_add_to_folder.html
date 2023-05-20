@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<br>
+<br>
+<br>
+  <h2>Add post to folders</h2>
+  <form method="post">
+    {% csrf_token %}
+    {% for folder in folders %}
+      <label>
+        <input type="checkbox" name="folders" value="{{ folder.pk }}"> {{ folder}}
+      </label>
+      <br>
+    {% empty %}
+      <p>No folders created yet</p>
+    {% endfor %}
+    <button type="submit">Save</button>
+  </form>
+
+  <div class="new-folder-section">
+    <h2>Create New Folder</h2>
+    <form method="post" action="{% url 'folder-create' post_id=post.pk %}">
+
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">Create</button>
+    </form>
+  </div>
+{% endblock %}

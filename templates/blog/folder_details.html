@@ -1,0 +1,12 @@
+<!--{% extends 'base.html' %}-->
+
+{% block content %}
+  <h2>{{ folder.name }}</h2>
+  <ul>
+    {% for post in folder.posts.all %}
+      <li><a href="{% url 'blog:post-detail' post.pk %}">{{ post.title }}</a></li>
+    {% empty %}
+      <li>No posts in this folder yet</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

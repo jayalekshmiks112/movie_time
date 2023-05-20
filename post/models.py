@@ -7,7 +7,7 @@ from django.urls import reverse
 import uuid
 from notification.models import Notification
 
-
+#from authy.models import Profile
 
 # uploading user files to a specific directory
 def user_directory_path(instance, filename):
@@ -37,14 +37,16 @@ class Tag(models.Model):
 #     user = models.ForeignKey(User, on_delete=models.CASCADE)
 #     file = models.FileField(upload_to=user_directory_path, verbose_name="Choose File")
 
+
 class Post(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     picture = models.ImageField(upload_to=user_directory_path, verbose_name="Picture")
     caption = models.CharField(max_length=10000, verbose_name="Caption")
     posted = models.DateField(auto_now_add=True)
-    tags = models.ManyToManyField(Tag, related_name="tags")
+    tags = models.ManyToManyField(Tag, related_name="tags",blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     likes = models.IntegerField(default=0)
+    #folders = models.ManyToManyField(Folder, blank=True)
 
     def get_absolute_url(self):
         return reverse("post-details", args=[str(self.id)])
@@ -52,6 +54,8 @@ class Post(models.Model):
     # def __str__(self):
     #     return str(self.caption)
 
+
+    
 
 class Likes(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -90,6 +94,29 @@ class Follow(models.Model):
         notify = Notification.objects.filter(sender=sender, user=following, notification_types=3)
         notify.delete()
 
+class Folder(models.Model):
+    title = models.CharField(max_length=75, verbose_name='Folder Title')
+    slug = models.SlugField(null=False, unique=True, default=uuid.uuid1)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    posts = models.ManyToManyField(Post)
+    is_public=models.BooleanField(default=False)
+    #followers=models.ManyToManyField(Profile,related_name='followed_folders',blank=True)
+    class Meta:
+        verbose_name = 'Folder'
+        verbose_name_plural = 'Folders'
+
+    def get_absolute_url(self):
+        return reverse('folders', args=[self.slug])
+
+    def __str__(self):
+        return self.title
+    
+    def is_visible_to_user(self, user):
+        if self.is_public:
+            return True
+        else:
+            return user in self.follower.all()
+    
 class Stream(models.Model):
     following = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='stream_following')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -106,6 +133,7 @@ class Stream(models.Model):
             stream.save()
 
 
+
 post_save.connect(Stream.add_post, sender=Post)
 
 post_save.connect(Likes.user_liked_post, sender=Likes)
@@ -113,3 +141,4 @@ post_delete.connect(Likes.user_unliked_post, sender=Likes)
 
 post_save.connect(Follow.user_follow, sender=Follow)
 post_delete.connect(Follow.user_unfollow, sender=Follow)
+

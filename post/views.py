@@ -2,19 +2,21 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.http import HttpResponseRedirect
+from django.conf import settings
 
-from post.models import Post, Tag, Follow, Stream, Likes
+from post.models import Post, Tag, Follow, Stream, Likes,Folder
 from django.contrib.auth.models import User
-from post.forms import NewPostform
+from post.forms import NewPostform,FolderForm
 from authy.models import Profile
 from django.urls import resolve
 from comment.models import Comment
 from comment.forms import NewCommentForm
 from django.core.paginator import Paginator
+from django.contrib import messages
 
 from django.db.models import Q
 # from post.models import Post, Follow, Stream
-
+import requests,os,uuid
 
 
 
@@ -60,8 +62,24 @@ def NewPost(request):
     user = request.user
     profile = get_object_or_404(Profile, user=user)
     tags_obj = []
-    
-    if request.method == "POST":
+
+    if user.username == 'movie_time':
+        api_key = 'fec735dd0fe3097e55bcc4b2d09ac477'
+        url = f'https://api.themoviedb.org/3/movie/popular?api_key={api_key}'
+        
+        response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()
+            movies = data['results']
+            
+            for movie in movies:
+                new_post = Post.objects.create(
+                    picture=movie['poster_path'],  
+                    caption=movie['overview'],
+                    user=user,
+                )
+                new_post.save()
+
         form = NewPostform(request.POST, request.FILES)
         if form.is_valid():
             picture = form.cleaned_data.get('picture')
@@ -83,15 +101,43 @@ def NewPost(request):
     }
     return render(request, 'newpost.html', context)
 
+
 @login_required
 def PostDetail(request, post_id):
     user = request.user
     post = get_object_or_404(Post, id=post_id)
     comments = Comment.objects.filter(post=post).order_by('-date')
 
+    if user.username=='movie_time':
+                api_key='fec735dd0fe3097e55bcc4b2d09ac477'
+                url=f'https://api.themoviedb.org/3/movie/popular?api_key={api_key}'
+
+                response=requests.get(url)
+                if response.status_code == 200:
+                    data=response.json()
+                    movies=data['results']
+
+                    for movie in movies:
+                        new_post= Post.objects.create(
+                            caption=movie['overview'],
+                            picture=movie['poster_path'],
+                            user=user,
+                        )
+            
+                        new_post.save()
+                form = NewCommentForm(request.POST)
+                if form.is_valid():
+            
+                    comment = form.save(commit=False)
+                    comment.post = post
+                    comment.user = user
+                    comment.save()
+                    return HttpResponseRedirect(reverse('post-details', args=[post.id]))
+
     if request.method == "POST":
         form = NewCommentForm(request.POST)
         if form.is_valid():
+            
             comment = form.save(commit=False)
             comment.post = post
             comment.user = user
@@ -99,6 +145,8 @@ def PostDetail(request, post_id):
             return HttpResponseRedirect(reverse('post-details', args=[post.id]))
     else:
         form = NewCommentForm()
+
+    
 
     context = {
         'post': post,
@@ -152,5 +200,80 @@ def favourite(request, post_id):
     else:
         profile.favourite.add(post)
     return HttpResponseRedirect(reverse('post-details', args=[post_id]))
+
+@login_required
+def folder_create(request,post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    if request.method == 'POST':
+        form = FolderForm(request.POST)
+        if form.is_valid():
+            folder = form.save(commit=False)
+            folder.user = request.user
+            folder.save()
+            messages.success(request, 'Folder created successfully')
+            return redirect('post-add-to-folder',post.pk)
+    else:
+        form = FolderForm()
+    return render(request, 'blog/folder_create.html', {'form': form})
+
+@login_required
+def post_add_to_folder(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    folders = request.user.folder_set.all()
+    if request.method == 'POST':
+        selected_folders = request.POST.getlist('folders')
+        for folder_id in selected_folders:
+            folder = Folder.objects.get(pk=folder_id)
+            folder.posts.add(post)  # Add the post to the folder's posts
+
+        messages.success(request, 'Post added to folder(s) successfully')
+        return redirect('post-details', post.pk)
+
+    return render(request, 'blog/post_add_to_folder.html', {'post': post, 'folders': folders})
+
+
+@login_required
+def folder_list(request):
+    folders = request.user.folder_set.all()
+    return render(request, 'blog/folder_list.html', {'folders': folders})
+
+
+@login_required
+def folder_detail(request, slug):
+    folder = get_object_or_404(Folder, slug=slug, user=request.user)
+    posts = folder.post_set.all()
+    return render(request, 'blog/folder_detail.html', {'folder': folder, 'posts': posts})
+
+
+@login_required
+def post_remove_from_folder(request, folder_slug, post_id):
+    folder = get_object_or_404(Folder, slug=folder_slug, user=request.user)
+    post = get_object_or_404(Post, pk=post_id)
+    folder.post_set.remove(post)
+    messages.success(request, 'Post removed from folder successfully')
+    return redirect('folder-detail', slug=folder_slug)
+
+
+@login_required
+def post_move_to_folder(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    current_folder = post.folder_set.first()
+    folders = request.user.folder_set.all()
+    if request.method == 'POST':
+        selected_folder = request.POST.get('folder')
+        if selected_folder:
+            folder = Folder.objects.get(pk=selected_folder)
+            post.folder_set.remove(current_folder)
+            post.folder_set.add(folder)
+            messages.success(request, 'Post moved to folder successfully')
+        return redirect('post-detail', post.pk)
+    return render(request, 'blog/post_move_to_folder.html', {'post': post, 'folder': folders, 'current_folder': current_folder})
+
+@login_required
+def saved_folders(request,user):
+    #print(request.user)
+    selected_user=get_object_or_404(User,id=user)
+    folders = Folder.objects.filter(user=selected_user)
+    return render(request, 'blog/saved_folders.html', {'folders': folders})
 
 

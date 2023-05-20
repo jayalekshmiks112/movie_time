@@ -1,0 +1,28 @@
+<!--{% extends 'base.html' %}-->
+
+{% block content %}
+  <h1>Move Post to Folder</h1>
+  
+  <p><strong>Post:</strong> {{ post.caption }}</p>
+  
+  <form method="POST">
+    {% csrf_token %}
+    
+    <label for="folder">Select Folder:</label>
+    <select name="folder" id="folder">
+      {% for folder in folders %}
+        <option value="{{ folder.pk }}" {% if current_folder.pk == folder.pk %}selected{% endif %}>{{ folder.title }}</option>
+      {% endfor %}
+    </select>
+    
+    <button type="submit">Move</button>
+  </form>
+  
+  {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endblock %}
