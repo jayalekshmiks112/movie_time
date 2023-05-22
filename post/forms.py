@@ -1,6 +1,6 @@
 from django import forms
-from post.models import Post,Folder
-
+from post.models import Post,Folder,Follow
+from django.contrib.auth.models import User
 
 class NewPostform(forms.ModelForm):
     # content = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}), required=True)
@@ -13,7 +13,8 @@ class NewPostform(forms.ModelForm):
         model = Post
         fields = ['picture', 'caption', 'tags']
 
+
 class FolderForm(forms.ModelForm):
     class Meta:
         model = Folder
-        fields = ['title']
+        fields = ['title', 'visibility']

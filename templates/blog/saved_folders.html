@@ -1,9 +1,14 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <h2>Saved Folders</h2>
-  {% for folder in folders %}
-    <h3>{{ folder }}</h3>
+<br>
+<br>
+<br>
+<h2>Saved Folders</h2>
+{% for folder in folders %}
+  <h3>{{ folder.title }}</h3>
+  <p>Visibility: {{ folder.get_visibility_display }}</p>
+
     {% for post in folder.posts.all %}
       <div>
         {% if post.picture %}
@@ -13,7 +18,9 @@
     {% empty %}
       <p>No posts in this folder</p>
     {% endfor %}
-  {% empty %}
-    <p>No folders created yet</p>
-  {% endfor %}
+
+{% empty %}
+  <p>No folders created yet</p>
+{% endfor %}
 {% endblock %}
+

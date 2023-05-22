@@ -85,8 +85,8 @@
                     {% endif %}
                     <br><br>
                     <div class="profile-user-settings">
-                        <a  href="{% url 'profile' profile.user %}"  class="btns profiele-edit-btn">Posts</a>
-                        <a  href="{% url 'saved-folders' user=profile.user.id %}"  class="btns profeile-edit-btn">Saved</a>
+                        <!--<a  href="{% url 'profile' profile.user %}"  class="btns profiele-edit-btn">Posts</a>-->
+                        <a  href="{% url 'saved-folders' user=profile.user.id %}"  class="btns profeile-edit-btn">Saved Folders</a>
                         <!--{% if request.user == profile.user %}-->
                         
                         <!--{% endif %}-->

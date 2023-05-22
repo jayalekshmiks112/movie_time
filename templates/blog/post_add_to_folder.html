@@ -4,27 +4,61 @@
 <br>
 <br>
 <br>
-  <h2>Add post to folders</h2>
-  <form method="post">
-    {% csrf_token %}
-    {% for folder in folders %}
+<h2>Add post to folders</h2>
+<form method="post">
+  {% csrf_token %}
+  {% for folder in folders %}
+  <label>
+    <input type="checkbox" name="folders" value="{{ folder.pk }}"> {{ folder }}
+  </label>
+  <br>
+  {% empty %}
+  <p>No folders created yet</p>
+  {% endfor %}
+  <br>
+  <h4>Select Visibility:</h4>
+  <label>
+    <input type="radio" name="visibility" value="public"> Public
+  </label>
+  <label>
+    <input type="radio" name="visibility" value="private"> Private
+  </label>
+  <label>
+    <input type="radio" name="visibility" value="selected"> Selected
+  </label>
+  <br>
+  <div id="selected-followers" style="display: none;">
+    <h4>Select Followers:</h4>
+    {% for user in following_users %}
       <label>
-        <input type="checkbox" name="folders" value="{{ folder.pk }}"> {{ folder}}
+        <input type="checkbox" name="selected_followers" value="{{ user.pk }}"> {{ user.username }}
       </label>
       <br>
     {% empty %}
-      <p>No folders created yet</p>
+      <p>No followers available</p>
     {% endfor %}
-    <button type="submit">Save</button>
-  </form>
-
-  <div class="new-folder-section">
-    <h2>Create New Folder</h2>
-    <form method="post" action="{% url 'folder-create' post_id=post.pk %}">
-
-      {% csrf_token %}
-      {{ form.as_p }}
-      <button type="submit">Create</button>
-    </form>
   </div>
+  
+  <button type="submit">Save</button>
+</form>
+
+<div class="new-folder-section">
+  <h2>Create New Folder</h2>
+  <form method="post" action="{% url 'folder-create' post_id=post.pk %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Create</button>
+  </form>
+</div>
+
+<script>
+  document.querySelector('input[name="visibility"]').addEventListener('change', function() {
+    var selectedFollowersDiv = document.getElementById('selected-followers');
+    if (this.value === 'selected') {
+      selectedFollowersDiv.style.display = 'block';
+    } else {
+      selectedFollowersDiv.style.display = 'none';
+    }
+  });
+</script>
 {% endblock %}

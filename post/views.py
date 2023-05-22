@@ -215,7 +215,7 @@ def folder_create(request,post_id):
     else:
         form = FolderForm()
     return render(request, 'blog/folder_create.html', {'form': form})
-
+"""
 @login_required
 def post_add_to_folder(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
@@ -231,10 +231,75 @@ def post_add_to_folder(request, post_id):
 
     return render(request, 'blog/post_add_to_folder.html', {'post': post, 'folders': folders})
 
+@login_required
+def post_add_to_folder(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    folders = request.user.folder_set.all()
+    if request.method == 'POST':
+        selected_folders = request.POST.getlist('folders')
+        visibility = request.POST.get('visibility')
+
+        if visibility == 'selected':
+            selected_followers = request.POST.getlist('selected_followers')
+            followers = User.objects.filter(pk__in=selected_followers)
+        else:
+            followers = []
+
+        for folder_id in selected_folders:
+            folder = Folder.objects.get(pk=folder_id)
+            folder.posts.add(post)  # Add the post to the folder's posts
+
+            # Update folder visibility and followers
+            folder.is_public = visibility == 'public'
+            folder.followers.set(followers)
+            folder.save()
+
+        messages.success(request, 'Post added to folder(s) successfully')
+        return redirect('post-details', post.pk)
+
+    return render(request, 'blog/post_add_to_folder.html', {'post': post, 'folders': folders})
+
+"""
+@login_required
+def post_add_to_folder(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    folders = request.user.folder_set.all()
+
+    if request.method == 'POST':
+        selected_folders = request.POST.getlist('folders')
+        visibility = request.POST.get('visibility')
+
+        if visibility == 'selected':
+            selected_followers = request.POST.getlist('selected_followers')
+            followers = User.objects.filter(pk__in=selected_followers)
+        else:
+            followers = []
+
+        for folder_id in selected_folders:
+            folder = Folder.objects.get(pk=folder_id)
+            folder.posts.add(post)  # Add the post to the folder's posts
+
+            # Update folder visibility and followers
+            folder.visibility = visibility
+            folder.followers.set(followers)
+            folder.save()
+
+        messages.success(request, 'Post added to folder(s) successfully')
+        return redirect('post-details', post.pk)
+
+    # Retrieve the list of users you follow
+    following_users = User.objects.filter(following__follower=request.user)
+
+    return render(request, 'blog/post_add_to_folder.html', {
+        'post': post,
+        'folders': folders,
+        'following_users': following_users,
+    })
+
 
 @login_required
 def folder_list(request):
-    folders = request.user.folder_set.all()
+    folders = Folder.objects.filter(user=request.user)
     return render(request, 'blog/folder_list.html', {'folders': folders})
 
 
@@ -268,7 +333,7 @@ def post_move_to_folder(request, post_id):
             messages.success(request, 'Post moved to folder successfully')
         return redirect('post-detail', post.pk)
     return render(request, 'blog/post_move_to_folder.html', {'post': post, 'folder': folders, 'current_folder': current_folder})
-
+"""
 @login_required
 def saved_folders(request,user):
     #print(request.user)
@@ -276,4 +341,17 @@ def saved_folders(request,user):
     folders = Folder.objects.filter(user=selected_user)
     return render(request, 'blog/saved_folders.html', {'folders': folders})
 
+"""
+@login_required
+def saved_folders(request, user):
+    selected_user = get_object_or_404(User, id=user)
+    folders = Folder.objects.filter(user=selected_user)
+
+    visible_folders = []
+    for folder in folders:
+        
+        if folder.is_visible_to_user(request.user):
+            visible_folders.append(folder)
+
+    return render(request, 'blog/saved_folders.html', {'folders': visible_folders})
 

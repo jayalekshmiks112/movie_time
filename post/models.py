@@ -95,12 +95,18 @@ class Follow(models.Model):
         notify.delete()
 
 class Folder(models.Model):
+    VISIBILITY_CHOICES = (
+        ('public', 'Public'),
+        ('private', 'Private'),
+        ('selected', 'Selected'),
+    )
+
     title = models.CharField(max_length=75, verbose_name='Folder Title')
     slug = models.SlugField(null=False, unique=True, default=uuid.uuid1)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     posts = models.ManyToManyField(Post)
-    is_public=models.BooleanField(default=False)
-    #followers=models.ManyToManyField(Profile,related_name='followed_folders',blank=True)
+    visibility = models.CharField(max_length=10, choices=VISIBILITY_CHOICES, default='private',null=True)
+    followers = models.ManyToManyField(User, related_name='followed_folders')
     class Meta:
         verbose_name = 'Folder'
         verbose_name_plural = 'Folders'
@@ -112,11 +118,19 @@ class Folder(models.Model):
         return self.title
     
     def is_visible_to_user(self, user):
-        if self.is_public:
+        if self.visibility == 'public':
             return True
-        else:
-            return user in self.follower.all()
+        elif self.visibility == 'private':
+            return self.user == user or Follow.objects.filter(following=user).exists()
+        return False
+
+    """
+    def is_following_user(self, user):
+        return Follow.objects.filter(follower=self.user, following=user).exists()
     
+    def get_following_users(self):
+        return User.objects.filter(following__follower=self.user)
+    """
 class Stream(models.Model):
     following = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='stream_following')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
