@@ -9,7 +9,7 @@ from django.db.models.signals import post_save
 import uuid
 from django.utils import timezone
 from post.models import Post
-from search.models import Movie, Series
+
 
 class Profile(models.Model):
     
@@ -49,11 +49,3 @@ def save_user_profile(sender, instance, **kwargs):
 
 post_save.connect(create_user_profile, sender=User)
 post_save.connect(save_user_profile, sender=User)
-
-class Story(models.Model):
-    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, null=True)
-    series = models.ForeignKey(Series, on_delete=models.CASCADE, null=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-    tags = models.CharField(max_length=50, null=True)
-    caption = models.CharField(max_length=50, null=True)
-    live_till = models.DateTimeField(auto_now=False, auto_now_add=False, null=True)

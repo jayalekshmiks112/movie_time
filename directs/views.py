@@ -6,8 +6,6 @@ from django.contrib.auth.models import User
 from authy.models import Profile
 from django.db.models import Q
 from django.core.paginator import Paginator
-from django.views.generic import View
-from .models import *
 
 @login_required
 def inbox(request):
@@ -50,7 +48,6 @@ def Directs(request, username):
         'directs': directs,
         'messages': messages,
         'active_direct': active_direct,
-        'shares': MediaShare.objects.filter(Q(sender=user) | Q(reciepient=user))
     }
     return render(request, 'directs/direct.html', context)
 
@@ -91,23 +88,3 @@ def NewConversation(request, username):
     if from_user != to_user:
         Message.sender_message(from_user, to_user, body)
     return redirect('message')
-
-class SendDirectMediaView(View):
-    def post(self, request, format=None):
-        data = request.POST
-        send_to = data.get('send_to')
-        media_type = data.get('send_to')
-        media_id = data.get('send_to')
-
-        send_to = send_to.split(",")[1:]
-        if media_type == 'movie':
-            media = Movie.objects.get(id=media_id)
-        elif media_type == 'series':
-            media = Series.objects.get(id=media_id)
-        else:
-            media = None
-
-        for i in send_to:
-            MediaShare.send_message(request.user, i, media_type, media)
-
-        return redirect('media-details', media_id=media_id, media_type=media_type)
