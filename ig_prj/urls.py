@@ -27,8 +27,7 @@ urlpatterns = [
     path('users/', include('authy.urls')),
     path('', include('post.urls')),
     path('message/', include('directs.urls')),
-    path('', include('notification.urls')),
-    path('search/', include('search.urls')),
+    path('',include('notification.urls')),
     #path('savefolder/',include('savefolder.urls')),
     # profile
     path('<username>/', UserProfile, name='profile'),
