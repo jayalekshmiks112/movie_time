@@ -12,10 +12,11 @@ from django.contrib.auth import authenticate, login
 
 from post.models import Post, Follow, Stream
 from django.contrib.auth.models import User
-from authy.models import Profile
+from authy.models import Profile, Story
 from .forms import EditProfileForm, UserRegisterForm
 from django.urls import resolve
 from comment.models import Comment
+from search.models import *
 
 def UserProfile(request, username):
     Profile.objects.get_or_create(user=request.user)
@@ -41,6 +42,12 @@ def UserProfile(request, username):
     page_number = request.GET.get('page')
     posts_paginator = paginator.get_page(page_number)
 
+    playlists = Playlist.objects.filter(created_by=request.user)
+    stories = Story.objects.filter(user=request.user)
+    saved_playlists = Playlist.objects.filter(saved_by=request.user)
+    subscribed_movies = Movie.objects.filter(subscribers=request.user)
+    subscribed_series = Series.objects.filter(subscribers=request.user)
+
     context = {
         'posts': posts,
         'profile':profile,
@@ -49,6 +56,10 @@ def UserProfile(request, username):
         'followers_count':followers_count,
         'posts_paginator':posts_paginator,
         'follow_status':follow_status,
+
+        'playlists': playlists,
+        'stories': stories,
+        'saved': saved_playlists
         # 'count_comment':count_comment,
     }
     return render(request, 'profile.html', context)

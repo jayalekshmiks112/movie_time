@@ -48,6 +48,30 @@ img {
 
 /* Profile Section */
 
+.stories-container {
+    width: 100%;
+    overflow-x: scroll;
+    white-space: nowrap;
+  }
+
+  .story {
+    display: inline-block;
+    width: 200px;
+    margin: 10px;
+    background-color: white;
+    padding: 2px;
+  }
+
+  .story img {
+    width: 100%;
+    height: auto;
+  }
+
+  .story-caption {
+    text-align: center;
+    margin-top: 5px;
+  }
+
 .profile {
     padding: 5rem 0;
 }

@@ -84,6 +84,11 @@
                     <p><span class="profile-real-name"></span>◉ <a href="{{profile.url}}">{{profile.url}}</a></p>
                     {% endif %}
                     <br><br>
+                    <div style="margin: 12px;">
+                        {% for playlist in playlists %}
+                            <a href="{% url 'get-playlist' playlist.key %}" style="text-decoration: none;" class="btn profile-edit-btn">{{playlist.title}}</a>
+                        {% endfor %}
+                    </div>
                     <div class="profile-user-settings">
                         <!--<a  href="{% url 'profile' profile.user %}"  class="btns profiele-edit-btn">Posts</a>-->
                         <a  href="{% url 'saved-folders' user=profile.user.id %}"  class="btns profeile-edit-btn">Saved Folders</a>
@@ -116,6 +121,15 @@
     <main>
 
         <div class="container">
+            <div class="stories-container">
+                {% for story in stories %}
+                <div class="story">
+                    <img style="height:200px; border-radius: 10px" src="https://image.tmdb.org/t/p/original/{{story.movie.poster}}" alt="Story 1">
+                    <div class="story-caption">{{story.caption}}</div>
+                </div>
+                {% endfor %}
+                <!-- Add more stories as needed -->
+            </div>
 
             <div class="gallery">
                 
