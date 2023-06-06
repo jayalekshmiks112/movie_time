@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Movie Explore Page</title>
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+  <style>
+    .search-bar {
+      margin: 20px auto;
+      width: 50%;
+      display: flex;
+      justify-content: center;
+    }
+    
+    .section {
+      margin-top: 10px;
+      padding: 20px;
+    }
+    
+    .section-title {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    
+    .card-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+    }
+    
+    .card {
+      width: 200px;
+      margin: 10px;
+      text-align: center;
+    }
+    
+    .card img {
+      width: 100%;
+      height: auto;
+    }
+  </style>
+</head>
+<body style="margin-top:60px">
+    <a href="{% url 'search-tab' %}">
+        <div class="search-bar">
+            <input type="text" placeholder="Search" name="query">
+            <button class="btn btn-primary" type="submit">Search</button>
+            
+        </div>
+    </a>
+  
+  <div class="section">
+    <h2 class="section-title">Trending Movies</h2>
+    <div class="card-container">
+        {% for movie in top_movies %}
+            <div class="card">
+                <img src="https://image.tmdb.org/t/p/original/{{movie.poster}}" alt="Trending Movie 1">
+                <h3>{{movie.title}}</h3>
+            </div>
+        {% endfor %}
+      <!-- Add more movie cards here -->
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2 class="section-title">Trending Series</h2>
+    <div class="card-container">
+        {% for series in top_series %}
+            <div class="card">
+                <img src="https://image.tmdb.org/t/p/original/{{series.poster}}" alt="Trending Movie 1">
+                <h3>{{series.title}}</h3>
+            </div>
+        {% endfor %}
+      <!-- Add more series cards here -->
+    </div>
+  </div>
+  
+  <div class="section">
+    <h2 class="section-title">Top 10 Playlists</h2>
+    <div class="card-container">
+        {% for playlist in top_playlists %}
+            <div class="card">
+                <h3>{{playlist.details.title}}</h3>
+                <div>
+                    <p class="w3-half">{{playlist.likes}} Likes</p>
+                    <p class="w3-half">{{playlist.saves}} Saves</p>
+                    <p class="w3-half">{{playlist.movies}} Movies</p>
+                    <p class="w3-half">{{playlist.series}} Series</p>
+                </div>
+            </div>
+        {% endfor %}
+      <!-- Add more playlist cards here -->
+    </div>
+  </div>
+</body>
+</html>
+
+
+{% endblock content %}

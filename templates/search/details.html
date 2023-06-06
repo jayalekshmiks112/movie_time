@@ -1,0 +1,327 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Movie Details</title>
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+  <style>
+    /* Custom CSS styles */
+    .movie-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .movie-title {
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .movie-subtitle {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .movie-poster {
+      max-width: 300px;
+      height: auto;
+    }
+
+    .movie-description {
+      margin-top: 10px;
+    }
+
+    .button-group {
+      margin-top: 20px;
+    }
+
+    .button {
+      margin-right: 10px;
+      margin-bottom: 5px;
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 999;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.8);
+    }
+
+    .modal-content {
+      background-color: #fefefe;
+      margin: 5% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 60%;
+    }
+
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .playlist-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .playlist-item input[type="checkbox"] {
+      margin-right: 10px;
+    }
+
+    .save-button {
+      margin-top: 10px;
+    }
+
+    .rating-modal {
+      display: none;
+    }
+    
+    /* Center the modal */
+    .modal-content {
+      margin: 10% auto;
+      width: 500px;
+      padding: 20px;
+      background-color: #f7f7f7;
+      border-radius: 4px;
+    }
+    
+    /* Style the rating buttons */
+    .rating-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    
+    .rating-buttons button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 24px;
+    }
+    
+    .rating-buttons .emoji-button {
+      padding: 0;
+      width: 30px;
+      height: 30px;
+    }
+    
+    .rating-buttons .word-button {
+      border: 1px solid #ccc;
+      padding: 4px 8px;
+    }
+    
+    .rating-buttons .word-button:hover {
+      background-color: #f1f1f1;
+    }
+    
+    /* Style the submit button */
+    .submit-button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .element-class {
+      margin: 10% auto;
+      padding: 20px;
+      border-radius: 4px;
+    }
+
+    .notification {
+      background-color: #f8f8f8;
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Story Modal -->
+  <div id="storyModal" class="w3-modal">
+    <div class="w3-modal-content w3-container element-class">
+      <div class="w3-half">
+        <img class="movie-poster w3-round" src="https://image.tmdb.org/t/p/original/{{media.poster}}" alt="Movie Poster">
+      </div>
+      <div clas="w3-container">
+        <h3>Create a Story</h3>
+        <form action="{% url 'create-story' %}" class="w3-half" method="post">
+          {% csrf_token %}
+          <!-- Caption input -->
+          <input type="text" name="caption" id="captionInput" class="w3-input w3-margin-bottom w3-half" placeholder="Caption" required>
+          
+          <!-- Tags input -->
+          <input type="text" name="tags" id="tagsInput" class="w3-input w3-margin-bottom w3-half" placeholder="Tags" required>
+          
+          <!-- Datetime input -->
+          <input type="datetime-local" name="datetime" class="w3-input w3-half w3-margin-bottom" id="datetimeInput" required>
+
+          <input type="hidden" name="media_type" value="{{media_type}}" >
+          <input type="hidden" name="media_id" value="{{media.id}}" >
+
+          <button type="submit" class="w3-block w3-margin-bottom submit-button">Submit</button>
+          <button type="button" onclick="document.getElementById('storyModal').style.display = 'none';" class="w3-block w3-red submit-button">Cancel</button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Rating modal -->
+  <div id="ratingModal" class="w3-modal w3-container rating-modal">
+    <div class="w3-modal-content modal-content">
+      <span class="close" onclick="document.getElementById('ratingModal').style.display = 'none';">&times;</span>
+      <h3>Rate This Movie</h3>
+      <form action="{% url 'submit-rating' %}" method="post">
+        {% csrf_token %}
+
+        <div class="rating-buttons">
+          <!-- Emoji buttons -->
+          <button type="submit" class="emoji-button"  name="rating" value="1">😡</button>
+          <button type="submit" class="emoji-button"  name="rating" value="2">😠</button>
+          <button type="submit" class="emoji-button"  name="rating" value="3">😐</button>
+          <button type="submit" class="emoji-button"  name="rating" value="4">😊</button>
+          <button type="submit" class="emoji-button"  name="rating" value="5">😄</button>
+        </div>
+
+        <div class="rating-buttons">
+          <!-- Word buttons -->
+          <button type="submit" class="word-button"  name="rating" value="1">Terrible</button>
+          <button type="submit" class="word-button"  name="rating" value="2">Bad</button>
+          <button type="submit" class="word-button"  name="rating" value="3">Okay</button>
+          <button type="submit" class="word-button"  name="rating" value="4">Good</button>
+          <button type="submit" class="word-button"  name="rating" value="5">Excellent</button> 
+        </div>
+      
+        <input type="hidden" id="media_type" name="media_type" value="{{media_type}}">
+        <input type="hidden" id="media_id" name="media_id" value="{{media.id}}">
+      </form>
+    </div>
+  </div>
+
+
+  <div style="margin-top: 50px;" class="w3-container w3-border w3-white w3-round movie-container">
+    <div class="w3-row-padding w3-margin-top">
+      <div class="w3-half">
+        <img class="movie-poster w3-round" src="https://image.tmdb.org/t/p/original/{{media.poster}}" alt="Movie Poster">
+      </div>
+      <div class="w3-half w3-left">
+        <h3 class="movie-title">{{media.title}}</h3>
+        <p class="movie-subtitle">Movie Subtitle</p>
+        <p class="movie-description">{{media.overview}}</p>
+        <div class="button-group">
+          <button class="w3-button w3-blue button" onclick="openModal()">Add to Playlist</button>
+          <button class="w3-button w3-red button">Subscribe</button>
+        </div>
+        <div class="button-group " >
+          <p id="notificationText" style="display:none" class="notification"></p>
+          {% if already_seen %}
+            <a href="{% url 'already-seen' media_type media.id 'unseen' %}">
+            <button class="w3-button w3-red button">Unseen</button>
+            </a>
+          {% else %}
+            <a href="{% url 'already-seen' media_type media.id 'seen' %}">
+            <button class="w3-button w3-black button">Already seen this</button>
+            </a>
+          {% endif %}
+          <button class="w3-button w3-green button" onclick="openRatingModal()">Rate Now</button>
+          <button class="w3-button w3-blue button" onclick="copyToClip()">Share</button>
+          <button class="w3-button w3-purple button" onclick="openStoryModal()">Add to Story</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="playlistModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <form method="POST" action="">
+        <h2>Choose a Playlist</h2>
+        {% for playlist in playlists %}
+        <div class="playlist-item">
+          <input type="checkbox" id="{{playlist.key}}" name="{{playlist.key}}">
+          <label for="{{playlist.key}}">{{playlist.title}}</label>
+        </div>
+        {% endfor %}
+        <button class="w3-button w3-blue save-button" type="submit">Save</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // JavaScript functions to handle modal functionality
+    function openModal() {
+      document.getElementById('playlistModal').style.display = 'block';
+    }
+    function closeModal() {
+      document.getElementById('playlistModal').style.display = 'none';
+    }
+
+
+    function openRatingModal() {
+      document.getElementById('ratingModal').style.display = 'block';
+    }
+
+
+    function openStoryModal() {
+      document.getElementById('storyModal').style.display = 'block';
+    }
+
+
+    function showNotification(message) {
+      var notification = document.getElementById("notificationText");
+      notification.textContent = message;
+      notification.style.display = "block";
+
+      setTimeout(function() {
+        notification.style.display = "none";
+      }, 3000);
+    }
+    function copyToClip() {
+      // Check if the Clipboard API is supported by the browser
+      if (navigator.clipboard) {
+        // Get the current page URL
+        var currentUrl = window.location.href;
+
+        // Use the Clipboard API to write the URL to the clipboard
+        navigator.clipboard.writeText(currentUrl)
+          .then(function() {
+            showNotification("URL copied to clipboard!");
+          })
+          .catch(function(err) {
+            showNotification("Failed to copy url, try again!");
+          });
+      } else {
+        // Clipboard API not supported
+        showNotification("Clipboard api not supported by the browser");
+      }
+    }
+  </script>
+</body>
+</html>
+
+
+
+{% endblock content %}

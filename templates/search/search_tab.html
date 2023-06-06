@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tabbed Page with W3.CSS</title>
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+  <style>
+    .tab-content {
+      display: none;
+      text-align: center;
+      padding: 20px;
+    }
+    
+    .search-bar {
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .search-bar input[type="text"] {
+      margin-right: 10px;
+    }
+    
+    .image-container {
+      margin-top: 50px;
+    }
+    
+    .image-container img {
+      width: 200px;
+      height: auto;
+    }
+    
+    .tab-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .tab-button {
+      width: 200px;
+    }
+  </style>
+  <script>
+    function openTab(tabName) {
+      var i, tabContent;
+      tabContent = document.getElementsByClassName("tab-content");
+      for (i = 0; i < tabContent.length; i++) {
+        tabContent[i].style.display = "none";
+      }
+      document.getElementById(tabName).style.display = "block";
+    }
+  </script>
+</head>
+<body style="margin-top:60px;">
+  <div class="tab-container">
+    <button class="w3-button w3-teal tab-button" onclick="openTab('movies')">Movies</button>
+    <button class="w3-button w3-blue tab-button" onclick="openTab('users')">Users</button>
+  </div>
+  
+  <div id="movies" class="tab-content">
+    <form action="{% url 'search-movie' %}" method="POST">
+        <div class="search-bar">
+            {% csrf_token %}
+            <input class="w3-input w3-half w3-border" name="query" type="text" placeholder="Search movies...">
+            <button class="w3-button w3-blue">Search</button>
+        </div>
+    </form>
+    <div class="image-container">
+      <img src="https://www.kindpng.com/picc/m/1-10104_download-png-movie-icon-flat-movie-icon-png.png" alt="Movie Image">
+    </div>
+  </div>
+  
+  <div id="users" class="tab-content">
+    <form action="{% url 'search-tab' %}" method="POST">
+        <div class="search-bar">
+            {% csrf_token %}
+            <input class="w3-input w3-half w3-border" name="query" type="text" placeholder="Search users...">
+            <button class="w3-button w3-blue">Search</button>
+        </div>
+    </form>
+    <div class="image-container">
+      <img src="https://icon-library.com/images/default-user-icon/default-user-icon-25.jpg" alt="User Image">
+    </div>
+  </div>
+  
+  <script>
+    // Open the default tab
+    openTab('movies');
+  </script>
+</body>
+</html>
+
+
+{% endblock content %}
